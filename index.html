@@ -7,25 +7,28 @@
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
-        html, body { width: 100%; height: 100%; font-family: 'Courier New', Courier, monospace; background: #111; color: white; overflow: hidden; touch-action: none; }
+        html, body { width: 100%; height: 100%; font-family: 'Courier New', Courier, monospace; background: #111; color: white; overflow: hidden; }
 
         #setup-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(26, 26, 26, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 9999; padding: 20px; overflow-y: auto; touch-action: auto;
+            background: rgba(26, 26, 26, 0.98); display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; padding: 20px; overflow-y: auto;
         }
 
-        .setup-box { background: #333; padding: 20px; border-radius: 10px; width: 100%; max-width: 450px; }
-        .setup-box h2 { margin-bottom: 15px; text-align: center; font-size: 20px; }
-        .setup-box h3 { margin: 15px 0 5px 0; color: #2ecc71; font-size: 16px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        .setup-box { background: #222; padding: 25px; border-radius: 10px; width: 100%; max-width: 450px; border: 1px solid #444; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .setup-box h2 { margin-bottom: 15px; text-align: center; font-size: 20px; color: #fff; letter-spacing: 1px; }
+        .setup-box h3 { margin: 15px 0 10px 0; color: #2ecc71; font-size: 16px; border-bottom: 1px solid #444; padding-bottom: 5px; }
 
         .file-input-group { margin-bottom: 12px; display: flex; flex-direction: column; }
         .file-input-group label { margin-bottom: 5px; font-size: 13px; color: #ccc; }
+        .file-input-group input { background: #333; color: white; border: 1px solid #555; padding: 5px; border-radius: 4px; }
         
         #start-btn {
             width: 100%; padding: 15px; background: #27ae60; color: white; border: none;
             border-radius: 5px; font-size: 18px; font-weight: bold; margin-top: 20px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); transition: background 0.2s;
         }
+        #start-btn:hover { background: #219653; }
 
         /* КНОПКА ПОДПИСАТЬ ВВЕРХУ ЭКРАНА */
         #sign-screen-btn {
@@ -201,8 +204,8 @@
         </a-entity>
 
         <!-- Листок расписания (стол) -->
-        <a-entity id="table-schedule" position="0.6 0.86 -1.0" rotation="-90 -15 0">
-            <a-plane class="clickable" width="0.3" height="0.45" color="#fdfbf7"></a-plane>
+        <a-entity id="table-schedule" class="clickable" position="0.6 0.86 -1.0" rotation="-90 -15 0">
+            <a-plane width="0.3" height="0.45" color="#fdfbf7"></a-plane>
             <a-text value="SCHEDULE: 
                         10:41 Kaliningrad-Mamonovo,
                         17:11 Mamonovo-Kaliningrad" 
@@ -221,7 +224,7 @@
             <a-camera id="main-camera" look-controls="magicWindowTrackingEnabled: false; touchEnabled: true; pointerLockEnabled: false">
                 
                 <!-- Листок расписания (рука) -->
-                <a-entity id="hand-schedule" position="0 -0.2 -0.4" rotation="10 0 0" visible="false">
+                <a-entity id="hand-schedule" class="clickable" position="0 -0.2 -0.4" rotation="10 0 0" visible="false">
                     <a-plane width="0.3" height="0.45" color="#fdfbf7"></a-plane>
                     <a-text value="SCHEDULE: 
                         10:41 Kaliningrad-Mamonovo,
@@ -232,8 +235,8 @@
 
                 <!-- Рация (рука) -->
                 <a-entity id="hand-radio" position="0.3 -0.35 -0.5" rotation="0 -20 0" visible="false">
-                    <a-box id="hand-radio-body" width="0.12" height="0.25" depth="0.06" color="#1a1a1a"></a-box>
-                    <a-cylinder id="hand-radio-btn" position="0 0.05 0.035" rotation="90 0 0" radius="0.02" height="0.015" color="#e74c3c"></a-cylinder>
+                    <a-box id="hand-radio-body" class="clickable" width="0.12" height="0.25" depth="0.06" color="#1a1a1a"></a-box>
+                    <a-cylinder id="hand-radio-btn" class="clickable" position="0 0.05 0.035" rotation="90 0 0" radius="0.02" height="0.015" color="#e74c3c"></a-cylinder>
                 </a-entity>
             </a-camera>
         </a-entity>
@@ -258,8 +261,6 @@
         
         const tableSchedule = document.getElementById('table-schedule');
         const handSchedule = document.getElementById('hand-schedule');
-        const tablePlane = tableSchedule.querySelector('a-plane');
-        const handPlane = handSchedule.querySelector('a-plane');
         const tableSig = document.getElementById('table-sig');
         const handSig = document.getElementById('hand-sig');
         let isSigned = false;
@@ -377,25 +378,25 @@
             signBtn.style.display = 'none';
 
             handSchedule.setAttribute('visible', false);
-            handPlane.classList.remove('clickable');
+            handSchedule.classList.remove('clickable');
             tableSchedule.setAttribute('visible', true);
-            tablePlane.classList.add('clickable');
+            tableSchedule.classList.add('clickable');
         });
 
-        tablePlane.addEventListener('click', () => {
+        tableSchedule.addEventListener('click', () => {
             tableSchedule.setAttribute('visible', false);
-            tablePlane.classList.remove('clickable');
+            tableSchedule.classList.remove('clickable');
             handSchedule.setAttribute('visible', true);
-            handPlane.classList.add('clickable');
+            handSchedule.classList.add('clickable');
             if (!isSigned) signBtn.style.display = 'block';
         });
 
-        handPlane.addEventListener('click', () => {
+        handSchedule.addEventListener('click', () => {
             handSchedule.setAttribute('visible', false);
-            handPlane.classList.remove('clickable');
+            handSchedule.classList.remove('clickable');
             signBtn.style.display = 'none';
             tableSchedule.setAttribute('visible', true);
-            tablePlane.classList.add('clickable');
+            tableSchedule.classList.add('clickable');
         });
 
         // Умное переключение рации
@@ -429,28 +430,21 @@
             speechBubble.style.display = 'block';
 
             if (isCallIncoming) {
-                // Выводим реплику диспетчера
                 speechBubble.innerText = dispatcherMessages[currentMessageIndex];
                 speechBubble.style.borderColor = '#2ecc71';
                 speechBubble.style.color = '#2ecc71';
 
-                // Сбрасываем текущий вызов
                 isCallIncoming = false;
                 document.getElementById('radio-alert').style.display = 'none';
-
-                // Переключаем индекс на следующее сообщение
                 currentMessageIndex = (currentMessageIndex + 1) % dispatcherMessages.length;
 
-                // Заводим таймер для нового вызова через 35 секунд
                 setTimeout(triggerIncomingCall, 35000);
             } else {
-                // Если входящего вызова нет, то просто шумы эфира
                 speechBubble.innerText = "Рация: (в эфире слышны фоновые шумы депо и далекий стук колес...)";
                 speechBubble.style.borderColor = '#7f8c8d';
                 speechBubble.style.color = '#7f8c8d';
             }
 
-            // Субтитры исчезают через 6 секунд после ответа
             setTimeout(() => {
                 speechBubble.style.display = 'none';
             }, 6000);
@@ -458,12 +452,16 @@
 
         document.getElementById('start-btn').addEventListener('click', () => {
             setupScreen.style.display = 'none';
+            
+            // Жесткий пинок для видео (требование Chrome по автоплею)
             if (videoStation) {
-                videoStation.play().catch(e => {
-                    console.log("Видео заблокировано или отсутствует файл station.mp4:", e);
+                videoStation.muted = true;
+                videoStation.play().then(() => {
+                    if (screenVideo) screenVideo.setAttribute('src', '#video-station');
+                }).catch(e => {
+                    console.log("Видео заблокировано браузером. Требуется клик по экрану:", e);
                 });
             }
-            // Первый звонок диспетчера раздастся через 7 секунд после заступления на смену
             setTimeout(triggerIncomingCall, 7000);
         });
 
@@ -475,6 +473,7 @@
             if (screenVideo && videoTrain) {
                 screenVideo.setAttribute('src', '#video-train');
                 videoTrain.currentTime = 0;
+                videoTrain.muted = true; // Для надежности автоплея в Chrome
                 videoTrain.play().catch(e => {});
             }
         }
