@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D Симулятор Дежурного</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+        html, body { width: 100%; height: 100%; font-family: 'Courier New', Courier, monospace; background: #111; color: white; overflow: hidden; touch-action: none; }
+
+        #setup-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 26, 26, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; padding: 20px; overflow-y: auto; touch-action: auto;
+        }
+
+        .setup-box { background: #333; padding: 20px; border-radius: 10px; width: 100%; max-width: 450px; }
+        .setup-box h2 { margin-bottom: 15px; text-align: center; font-size: 20px; }
+        .setup-box h3 { margin: 15px 0 5px 0; color: #2ecc71; font-size: 16px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+
+        .file-input-group { margin-bottom: 12px; display: flex; flex-direction: column; }
+        .file-input-group label { margin-bottom: 5px; font-size: 13px; color: #ccc; }
+        
+        #start-btn {
+            width: 100%; padding: 15px; background: #27ae60; color: white; border: none;
+            border-radius: 5px; font-size: 18px; font-weight: bold; margin-top: 20px; cursor: pointer;
+        }
+
+        /* КНОПКА ПОДПИСАТЬ ВВЕРХУ ЭКРАНА */
+        #sign-screen-btn {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            padding: 12px 30px; background: #e74c3c; color: white; border: 2px solid white;
+            border-radius: 5px; font-size: 16px; font-weight: bold; font-family: inherit;
+            cursor: pointer; z-index: 2000; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        #sign-screen-btn:active { background: #c0392b; }
+
+        /* ИНДИКАТОРЫ ДЛЯ РАЦИИ */
+        #radio-alert {
+            position: absolute; bottom: 30px; right: 30px; background: rgba(231, 76, 60, 0.9); 
+            color: white; padding: 12px 20px; border-radius: 5px; font-weight: bold; 
+            display: none; z-index: 2000; animation: blink 1s infinite; border: 1px solid white;
+        }
+        #radio-speech {
+            position: absolute; bottom: 180px; left: 50%; transform: translateX(-50%); 
+            background: rgba(0, 0, 0, 0.85); border: 2px solid #2ecc71; padding: 15px 25px; 
+            border-radius: 5px; display: none; z-index: 2000; max-width: 80%; 
+            text-align: center; color: #2ecc71; font-weight: bold; font-size: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+
+        @keyframes blink {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        /* СТИЛИ ДЛЯ ВИРТУАЛЬНОГО ДЖОЙСТИКА */
+        #joystick-zone {
+            position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px;
+            background: rgba(255, 255, 255, 0.15); border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%; z-index: 1000; touch-action: none; display: flex;
+            align-items: center; justify-content: center;
+        }
+        #joystick-handle {
+            width: 50px; height: 50px; background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: transform 0.05s linear; pointer-events: none;
+        }
+    </style>
+
+    <script>
+        AFRAME.registerComponent('info-btn', {
+            schema: { type: 'number' },
+            init: function () {
+                this.el.addEventListener('click', () => {
+                    handleInfoButton(this.data);
+                    this.el.object3D.position.y -= 0.02;
+                    setTimeout(() => { this.el.object3D.position.y += 0.02; }, 100);
+                });
+            }
+        });
+
+        AFRAME.registerComponent('semafor-btn', {
+            init: function () {
+                this.el.addEventListener('click', () => {
+                    const audio = document.getElementById('semafor-audio');
+                    if (audio) {
+                        audio.currentTime = 0;
+                        audio.play().catch(e => console.log(e));
+                    }
+                    this.el.object3D.position.z -= 0.02;
+                    setTimeout(() => { this.el.object3D.position.z += 0.02; }, 150);
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+
+    <div id="setup-screen">
+        <div class="setup-box">
+            <h2>Подготовка к смене</h2>
+            <h3>Аудиоинформатор</h3>
+            <div class="file-input-group"><label>Звук 1:</label><input type="file" id="audio1" accept="audio/*"></div>
+            <div class="file-input-group"><label>Звук 2:</label><input type="file" id="audio2" accept="audio/*"></div>
+            <div class="file-input-group"><label>Звук 3:</label><input type="file" id="audio3" accept="audio/*"></div>
+            <audio id="racia-audio" src="Racia.mp3" preload="auto"></audio>
+            <audio id="semafor-audio" src="Simafor.mp3" preload="auto"></audio>
+            <button id="start-btn">Зайти в будку</button>
+        </div>
+    </div>
+
+    <!-- КНОПКА ПОДПИСАТЬ -->
+    <button id="sign-screen-btn">ПОДПИСАТЬ РАСПИСАНИЕ</button>
+
+    <!-- ИНТЕРФЕЙС СВЯЗИ ПО РАЦИИ -->
+    <div id="radio-alert">📳 ВЫЗОВ ПО РАЦИИ (ДНЦ)</div>
+    <div id="radio-speech"></div>
+
+    <!-- ВИРТУАЛЬНЫЙ ДЖОЙСТИК -->
+    <div id="joystick-zone">
+        <div id="joystick-handle"></div>
+    </div>
+
+    <a-scene id="game-scene" cursor="rayOrigin: mouse" raycaster="objects: .clickable" vr-mode-ui="enabled: false">
+        
+        <a-assets>
+            <video id="video-station" src="station.mp4" playsinline muted loop crossorigin="anonymous"></video>
+            <video id="video-train" src="arrival.mp4" playsinline muted crossorigin="anonymous"></video>
+            <img id="wood-texture" src="https://raw.githubusercontent.com/aframevr/sample-assets/master/assets/images/wood/hardwood2_diffuse.jpg" crossorigin="anonymous">
+            
+            <!-- ТЕКСТУРЫ КОМНАТЫ -->
+            <img id="wall-texture" src="https://img.magnific.com/free-photo/blue-texture_64049-251.jpg?semt=ais_hybrid&w=740" crossorigin="anonymous">
+            <img id="floor-texture" src="https://i.pinimg.com/736x/5c/4f/9e/5c4f9e75d28a3f5b9c3ea09de25981b0.jpg" crossorigin="anonymous">
+            <img id="door-texture" src="https://xn--d1azo.xn--p1ai/img/doors/5011.webp" crossorigin="anonymous">
+        </a-assets>
+
+        <a-light id="ambient-light" type="ambient" intensity="0.5"></a-light>
+        <a-light id="main-light" type="point" intensity="0.8" position="0 2.5 0"></a-light>
+
+        <!-- СТРУКТУРА КОМНАТЫ -->
+        <a-entity id="room">
+            <!-- ПЕРЕДНЯЯ СТЕНА -->
+            <a-plane position="-3.5 2 -4" width="1" height="5" src="#wall-texture" repeat="0.5 2.5"></a-plane>
+            <a-plane position="3.5 2 -4" width="1" height="5" src="#wall-texture" repeat="0.5 2.5"></a-plane>
+            <a-plane position="0 3.925 -4" width="6" height="1.475" src="#wall-texture" repeat="3 0.7"></a-plane>
+            <a-plane position="0 -0.075 -4" width="6" height="0.825" src="#wall-texture" repeat="3 0.4"></a-plane>
+
+            <!-- Задняя стена -->
+            <a-plane position="0 2 4" rotation="0 180 0" width="8" height="5" src="#wall-texture" repeat="4 2.5"></a-plane> 
+            
+            <!-- Левая стена с дверью -->
+            <a-plane position="-4 2 0" rotation="0 90 0" width="8" height="5" src="#wall-texture" repeat="4 2.5"></a-plane> 
+            <a-box position="-3.95 0.6 1.5" rotation="0 90 0" width="1.0" height="2.2" depth="0.05" src="#door-texture">
+                <a-sphere position="0.4 0 -0.04" radius="0.03" color="#d4af37"></a-sphere>
+            </a-box>
+
+            <!-- КНОПКА СЕМАФОРА ВОЗЛЕ ДВЕРИ -->
+            <a-entity position="-3.94 1.2 0.7" rotation="0 90 0">
+                <a-box width="0.2" height="0.25" depth="0.05" color="#555555"></a-box>
+                <a-cylinder semafor-btn class="clickable" position="0 0 0.03" rotation="90 0 0" radius="0.06" height="0.04" color="#ff0000"></a-cylinder>
+            </a-entity>
+
+            <!-- Правая стена -->
+            <a-plane position="4 2 0" rotation="0 -90 0" width="8" height="5" src="#wall-texture" repeat="4 2.5"></a-plane> 
+            
+            <!-- Пол -->
+            <a-plane position="0 -0.5 0" rotation="-90 0 0" width="8" height="8" src="#floor-texture" repeat="4 4"></a-plane> 
+            
+            <!-- Потолок -->
+            <a-plane position="0 4.5 0" rotation="90 0 0" width="8" height="8" color="#edf2f4"></a-plane>
+        </a-entity>
+
+        <!-- Окно -->
+        <a-video id="main-video-screen" src="#video-station" width="6" height="3.375" position="0 1.5 -3.95"></a-video>
+        <a-plane position="0 1.5 -3.93" width="6" height="3.375" color="#a0c4ff" opacity="0.15" material="transparent: true; metalness: 0.8; roughness: 0.1"></a-plane>
+        
+        <!-- Рамки окна -->
+        <a-box position="0 3.2 -3.9" width="6.2" height="0.1" depth="0.1" color="#2b2d42"></a-box>
+        <a-box position="0 -0.2 -3.9" width="6.2" height="0.1" depth="0.1" color="#2b2d42"></a-box>
+        <a-box position="-3.05 1.5 -3.9" width="0.1" height="3.4" depth="0.1" color="#2b2d42"></a-box>
+        <a-box position="3.05 1.5 -3.9" width="0.1" height="3.4" depth="0.1" color="#2b2d42"></a-box>
+
+        <!-- СТОЛ С НОЖКАМИ -->
+        <a-entity id="desk">
+            <a-box position="0 0.8 -1.2" width="3" height="0.1" depth="1.2" src="#wood-texture" repeat="2 1"></a-box>
+            <a-cylinder position="-1.4 0.15 -1.7" radius="0.04" height="1.2" src="#wood-texture"></a-cylinder>
+            <a-cylinder position="1.4 0.15 -1.7" radius="0.04" height="1.2" src="#wood-texture"></a-cylinder>
+            <a-cylinder position="-1.4 0.15 -0.7" radius="0.04" height="1.2" src="#wood-texture"></a-cylinder>
+            <a-cylinder position="1.4 0.15 -0.7" radius="0.04" height="1.2" src="#wood-texture"></a-cylinder>
+        </a-entity>
+
+        <!-- Пульт информатора на столе -->
+        <a-entity position="-0.2 1.0 -1.4" rotation="15 0 0">
+            <a-box width="1.2" height="0.1" depth="0.5" color="#4a5568"></a-box>
+            <a-cylinder class="clickable" info-btn="1" position="-0.4 0.05 -0.1" radius="0.08" height="0.05" color="#2ecc71"></a-cylinder>
+            <a-cylinder class="clickable" info-btn="2" position="0 0.05 -0.1" radius="0.08" height="0.05" color="#2ecc71"></a-cylinder>
+            <a-cylinder class="clickable" info-btn="3" position="0.4 0.05 -0.1" radius="0.08" height="0.05" color="#2ecc71"></a-cylinder>
+        </a-entity>
+
+        <!-- Листок расписания (стол) -->
+        <a-entity id="table-schedule" position="0.6 0.86 -1.0" rotation="-90 -15 0">
+            <a-plane class="clickable" width="0.3" height="0.45" color="#fdfbf7"></a-plane>
+            <a-text value="SCHEDULE: 
+                        10:41 Kaliningrad-Mamonovo,
+                        17:11 Mamonovo-Kaliningrad" 
+                    color="#111" align="center" position="0 0.05 0.01" scale="0.6 0.6 0.6" width="0.6"></a-text>
+            <a-text id="table-sig" value="НЕ ПОДПИСАНО" color="#ff0000" align="center" position="0 -0.15 0.01" scale="0.4 0.4 0.4" width="0.6"></a-text>
+        </a-entity>
+
+        <!-- Рация (стол) -->
+        <a-box id="table-radio" class="clickable" position="-1.0 0.95 -1.1" rotation="0 30 0" width="0.12" height="0.25" depth="0.06" color="#1a1a1a">
+            <a-cylinder position="-0.03 0.18 0" radius="0.01" height="0.15" color="#000"></a-cylinder>
+            <a-cylinder position="0 0.05 0.03" rotation="90 0 0" radius="0.02" height="0.01" color="#e74c3c"></a-cylinder>
+        </a-box>
+
+        <!-- КАМЕРА -->
+        <a-entity id="camera-rig" position="0 0.4 0.5" rotation="0 0 0">
+            <a-camera id="main-camera" look-controls="magicWindowTrackingEnabled: false; touchEnabled: true; pointerLockEnabled: false">
+                
+                <!-- Листок расписания (рука) -->
+                <a-entity id="hand-schedule" position="0 -0.2 -0.4" rotation="10 0 0" visible="false">
+                    <a-plane width="0.3" height="0.45" color="#fdfbf7"></a-plane>
+                    <a-text value="SCHEDULE: 
+                        10:41 Kaliningrad-Mamonovo,
+                        17:11 Mamonovo-Kaliningrad" 
+                            color="#111" align="center" position="0 0.05 0.01" scale="0.6 0.6 0.6" width="0.6"></a-text>
+                    <a-text id="hand-sig" value="НЕ ПОДПИСАНО" color="#ff0000" align="center" position="0 -0.15 0.01" scale="0.4 0.4 0.4" width="0.6"></a-text>
+                </a-entity>
+
+                <!-- Рация (рука) -->
+                <a-entity id="hand-radio" position="0.3 -0.35 -0.5" rotation="0 -20 0" visible="false">
+                    <a-box id="hand-radio-body" width="0.12" height="0.25" depth="0.06" color="#1a1a1a"></a-box>
+                    <a-cylinder id="hand-radio-btn" position="0 0.05 0.035" rotation="90 0 0" radius="0.02" height="0.015" color="#e74c3c"></a-cylinder>
+                </a-entity>
+            </a-camera>
+        </a-entity>
+    </a-scene>
+
+    <script>
+        let audioFiles = { 1: null, 2: null, 3: null };
+        const setupScreen = document.getElementById('setup-screen');
+        const signBtn = document.getElementById('sign-screen-btn');
+        const screenVideo = document.getElementById('main-video-screen');
+        const videoStation = document.getElementById('video-station');
+        const videoTrain = document.getElementById('video-train');
+        const raciaAudio = document.getElementById('racia-audio');
+        
+        const cameraRig = document.getElementById('camera-rig');
+        const mainCamera = document.getElementById('main-camera');
+        
+        const tableRadio = document.getElementById('table-radio');
+        const handRadio = document.getElementById('hand-radio');
+        const handRadioBody = document.getElementById('hand-radio-body');
+        const handRadioBtn = document.getElementById('hand-radio-btn');
+        
+        const tableSchedule = document.getElementById('table-schedule');
+        const handSchedule = document.getElementById('hand-schedule');
+        const tablePlane = tableSchedule.querySelector('a-plane');
+        const handPlane = handSchedule.querySelector('a-plane');
+        const tableSig = document.getElementById('table-sig');
+        const handSig = document.getElementById('hand-sig');
+        let isSigned = false;
+
+        // ПЕРЕМЕННЫЕ ДЛЯ СИСТЕМЫ ПЕРЕГОВОРОВ ПО РАЦИИ
+        let isCallIncoming = false;
+        let currentMessageIndex = 0;
+        const dispatcherMessages = [
+            "ДНЦ: Дежурный Мамоново! К вам со стороны Калининграда отправлен грузовой №2801. Готовьте 2-й путь приема.",
+            "ДНЦ: Мамоново, я ДНЦ. Пригородный поезд 6304 следует графиком. Принимайте на 1-й путь, не задерживайте.",
+            "ДНЦ: Внимание, Мамоново! На перегоне ведутся незапланированные путевые работы. Будьте бдительны.",
+            "ДНЦ: Дежурный, как приняли смену? Документы подписали? Закрепление на 4-м пути проверьте и доложите."
+        ];
+
+        // ЛОГИКА ВИРТУАЛЬНОГО ДЖОЙСТИКА
+        const joystickZone = document.getElementById('joystick-zone');
+        const joystickHandle = document.getElementById('joystick-handle');
+        
+        let joystickActive = false;
+        let moveX = 0;
+        let moveZ = 0;
+        const maxDistance = 50; 
+        const speed = 0.04; 
+
+        function handleJoystickStart(e) {
+            joystickActive = true;
+            handleJoystickMove(e);
+        }
+
+        function handleJoystickMove(e) {
+            if (!joystickActive) return;
+            const touch = e.touches ? e.touches[0] : e;
+            const rect = joystickZone.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            let deltaX = touch.clientX - centerX;
+            let deltaY = touch.clientY - centerY;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            if (distance > maxDistance) {
+                deltaX = (deltaX / distance) * maxDistance;
+                deltaY = (deltaY / distance) * maxDistance;
+            }
+
+            joystickHandle.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+            
+            moveX = deltaX / maxDistance;
+            moveZ = deltaY / maxDistance;
+        }
+
+        function handleJoystickEnd() {
+            joystickActive = false;
+            moveX = 0;
+            moveZ = 0;
+            joystickHandle.style.transform = 'translate(0px, 0px)';
+        }
+
+        joystickZone.addEventListener('touchstart', handleJoystickStart);
+        window.addEventListener('touchmove', handleJoystickMove);
+        window.addEventListener('touchend', handleJoystickEnd);
+
+        joystickZone.addEventListener('mousedown', handleJoystickStart);
+        window.addEventListener('mousemove', handleJoystickMove);
+        window.addEventListener('mouseup', handleJoystickEnd);
+
+        // Игровой цикл перемещения
+        function updateMovement() {
+            if (joystickActive && (moveX !== 0 || moveZ !== 0)) {
+                const rotation = mainCamera.getAttribute('rotation');
+                const angle = (rotation.y * Math.PI) / 180;
+
+                const forwardX = -Math.sin(angle);
+                const forwardZ = -Math.cos(angle);
+                
+                const sideX = Math.cos(angle);
+                const sideZ = -Math.sin(angle);
+
+                const dirForward = -moveZ;
+                const dirRight = moveX;
+
+                const dx = (forwardX * dirForward + sideX * dirRight) * speed;
+                const dz = (forwardZ * dirForward + sideZ * dirRight) * speed;
+
+                const pos = cameraRig.getAttribute('position');
+                
+                const nextX = Math.max(-3.5, Math.min(3.5, pos.x + dx));
+                const nextZ = Math.max(-3.5, Math.min(3.5, pos.z + dz));
+
+                cameraRig.setAttribute('position', `${nextX} ${pos.y} ${nextZ}`);
+            }
+            requestAnimationFrame(updateMovement);
+        }
+        requestAnimationFrame(updateMovement);
+
+        // Загрузка аудиоинформатора
+        document.getElementById('audio1').addEventListener('change', (e) => { if(e.target.files[0]) audioFiles[1] = new Audio(URL.createObjectURL(e.target.files[0])); });
+        document.getElementById('audio2').addEventListener('change', (e) => { if(e.target.files[0]) audioFiles[2] = new Audio(URL.createObjectURL(e.target.files[0])); });
+        document.getElementById('audio3').addEventListener('change', (e) => { if(e.target.files[0]) audioFiles[3] = new Audio(URL.createObjectURL(e.target.files[0])); });
+
+        // ФУНКЦИЯ ИНИЦИАЦИИ ВХОДЯЩЕГО ВЫЗОВА ОТ ДНЦ
+        function triggerIncomingCall() {
+            if (isCallIncoming) return;
+            isCallIncoming = true;
+            document.getElementById('radio-alert').style.display = 'block';
+        }
+
+        // ЛОГИКА ПОДПИСИ ЛИСТКА
+        signBtn.addEventListener('click', () => {
+            isSigned = true;
+            tableSig.setAttribute('value', 'Принято (Подпись: ДСП) ✓');
+            tableSig.setAttribute('color', '#27ae60');
+            handSig.setAttribute('value', 'Принято (Подпись: ДСП) ✓');
+            handSig.setAttribute('color', '#27ae60');
+            signBtn.style.display = 'none';
+
+            handSchedule.setAttribute('visible', false);
+            handPlane.classList.remove('clickable');
+            tableSchedule.setAttribute('visible', true);
+            tablePlane.classList.add('clickable');
+        });
+
+        tablePlane.addEventListener('click', () => {
+            tableSchedule.setAttribute('visible', false);
+            tablePlane.classList.remove('clickable');
+            handSchedule.setAttribute('visible', true);
+            handPlane.classList.add('clickable');
+            if (!isSigned) signBtn.style.display = 'block';
+        });
+
+        handPlane.addEventListener('click', () => {
+            handSchedule.setAttribute('visible', false);
+            handPlane.classList.remove('clickable');
+            signBtn.style.display = 'none';
+            tableSchedule.setAttribute('visible', true);
+            tablePlane.classList.add('clickable');
+        });
+
+        // Умное переключение рации
+        tableRadio.addEventListener('click', () => {
+            tableRadio.setAttribute('visible', false);
+            tableRadio.classList.remove('clickable');
+            
+            handRadio.setAttribute('visible', true);
+            handRadioBody.classList.add('clickable');
+            handRadioBtn.classList.add('clickable');
+        });
+
+        handRadioBody.addEventListener('click', () => {
+            handRadio.setAttribute('visible', false);
+            handRadioBody.classList.remove('clickable');
+            handRadioBtn.classList.remove('clickable');
+            
+            tableRadio.setAttribute('visible', true);
+            tableRadio.classList.add('clickable');
+        });
+
+        // НАЖАТИЕ НА КНОПКУ РАЦИИ В РУКЕ (ОТВЕТ НА ВЫЗОВ ИЛИ ПРОСЛУШИВАНИЕ ЭФИРА)
+        handRadioBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            if(raciaAudio) {
+                raciaAudio.currentTime = 0;
+                raciaAudio.play().catch(err => console.log(err));
+            }
+
+            const speechBubble = document.getElementById('radio-speech');
+            speechBubble.style.display = 'block';
+
+            if (isCallIncoming) {
+                // Выводим реплику диспетчера
+                speechBubble.innerText = dispatcherMessages[currentMessageIndex];
+                speechBubble.style.borderColor = '#2ecc71';
+                speechBubble.style.color = '#2ecc71';
+
+                // Сбрасываем текущий вызов
+                isCallIncoming = false;
+                document.getElementById('radio-alert').style.display = 'none';
+
+                // Переключаем индекс на следующее сообщение
+                currentMessageIndex = (currentMessageIndex + 1) % dispatcherMessages.length;
+
+                // Заводим таймер для нового вызова через 35 секунд
+                setTimeout(triggerIncomingCall, 35000);
+            } else {
+                // Если входящего вызова нет, то просто шумы эфира
+                speechBubble.innerText = "Рация: (в эфире слышны фоновые шумы депо и далекий стук колес...)";
+                speechBubble.style.borderColor = '#7f8c8d';
+                speechBubble.style.color = '#7f8c8d';
+            }
+
+            // Субтитры исчезают через 6 секунд после ответа
+            setTimeout(() => {
+                speechBubble.style.display = 'none';
+            }, 6000);
+        });
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            setupScreen.style.display = 'none';
+            if (videoStation) {
+                videoStation.play().catch(e => {
+                    console.log("Видео заблокировано или отсутствует файл station.mp4:", e);
+                });
+            }
+            // Первый звонок диспетчера раздастся через 7 секунд после заступления на смену
+            setTimeout(triggerIncomingCall, 7000);
+        });
+
+        function handleInfoButton(num) {
+            if (audioFiles[num]) { 
+                audioFiles[num].currentTime = 0; 
+                audioFiles[num].play().catch(e => {}); 
+            }
+            if (screenVideo && videoTrain) {
+                screenVideo.setAttribute('src', '#video-train');
+                videoTrain.currentTime = 0;
+                videoTrain.play().catch(e => {});
+            }
+        }
+
+        if (videoTrain) {
+            videoTrain.addEventListener('ended', () => {
+                if (screenVideo && videoStation) {
+                    screenVideo.setAttribute('src', '#video-station');
+                    videoStation.play().catch(e => {});
+                }
+            });
+        }
+    </script>
+</body>
+</html>
