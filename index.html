@@ -30,7 +30,6 @@
         }
         #start-btn:hover { background: #219653; }
 
-        /* КНОПКА ПОДПИСАТЬ ВВЕРХУ ЭКРАНА */
         #sign-screen-btn {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             padding: 12px 30px; background: #e74c3c; color: white; border: 2px solid white;
@@ -39,7 +38,6 @@
         }
         #sign-screen-btn:active { background: #c0392b; }
 
-        /* ИНДИКАТОРЫ ДЛЯ РАЦИИ */
         #radio-alert {
             position: absolute; bottom: 30px; right: 30px; background: rgba(231, 76, 60, 0.9); 
             color: white; padding: 12px 20px; border-radius: 5px; font-weight: bold; 
@@ -59,7 +57,6 @@
             100% { opacity: 0.4; }
         }
 
-        /* СТИЛИ ДЛЯ ВИРТУАЛЬНОГО ДЖОЙСТИКА */
         #joystick-zone {
             position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px;
             background: rgba(255, 255, 255, 0.15); border: 3px solid rgba(255, 255, 255, 0.4);
@@ -116,7 +113,6 @@
     </div>
 
     <button id="sign-screen-btn">ПОДПИСАТЬ РАСПИСАНИЕ</button>
-
     <div id="radio-alert">📳 ВЫЗОВ ПО РАЦИИ (ДНЦ)</div>
     <div id="radio-speech"></div>
 
@@ -146,7 +142,6 @@
             <a-plane position="0 -0.075 -4" width="6" height="0.825" src="#wall-texture" repeat="3 0.4"></a-plane>
 
             <a-plane position="0 2 4" rotation="0 180 0" width="8" height="5" src="#wall-texture" repeat="4 2.5"></a-plane> 
-            
             <a-plane position="-4 2 0" rotation="0 90 0" width="8" height="5" src="#wall-texture" repeat="4 2.5"></a-plane> 
             <a-box position="-3.95 0.6 1.5" rotation="0 90 0" width="1.0" height="2.2" depth="0.05" src="#door-texture">
                 <a-sphere position="0.4 0 -0.04" radius="0.03" color="#d4af37"></a-sphere>
@@ -158,7 +153,6 @@
             </a-entity>
 
             <a-plane position="4 2 0" rotation="0 -90 0" width="8" height="5" src="#wall-texture" repeat="4 2.5"></a-plane> 
-            
             <a-plane position="0 -0.5 0" rotation="-90 0 0" width="8" height="8" src="#floor-texture" repeat="4 4"></a-plane> 
             <a-plane position="0 4.5 0" rotation="90 0 0" width="8" height="8" color="#edf2f4"></a-plane>
         </a-entity>
@@ -188,19 +182,18 @@
             <a-cylinder position="1.4 0.15 -0.7" radius="0.04" height="1.2" src="#wood-texture"></a-cylinder>
         </a-entity>
 
+        <a-entity position="0 0.88 -0.9" rotation="-20 0 0">
+            <a-box width="0.35" height="0.05" depth="0.2" color="#2c3e50"></a-box>
+            <a-text value="СВЕТОФОР Ч1" color="#f1c40f" align="center" position="0 0.03 -0.05" scale="0.35 0.35 0.35" rotation="-90 0 0"></a-text>
+            <a-cylinder class="clickable tl-btn-red" position="-0.08 0.03 0.03" radius="0.03" height="0.03" color="#e74c3c"></a-cylinder>
+            <a-cylinder class="clickable tl-btn-green" position="0.08 0.03 0.03" radius="0.03" height="0.03" color="#2ecc71"></a-cylinder>
+        </a-entity>
+
         <a-entity position="-0.4 1.0 -1.4" rotation="15 0 0">
             <a-box width="0.8" height="0.1" depth="0.4" color="#4a5568"></a-box>
             <a-cylinder class="clickable" info-btn="1" position="-0.25 0.05 -0.05" radius="0.06" height="0.05" color="#2ecc71"></a-cylinder>
             <a-cylinder class="clickable" info-btn="2" position="0 0.05 -0.05" radius="0.06" height="0.05" color="#2ecc71"></a-cylinder>
             <a-cylinder class="clickable" info-btn="3" position="0.25 0.05 -0.05" radius="0.06" height="0.05" color="#2ecc71"></a-cylinder>
-        </a-entity>
-
-        <a-entity position="0.2 0.88 -1.3" rotation="-20 0 0">
-            <a-box width="0.35" height="0.05" depth="0.2" color="#2c3e50"></a-box>
-            <a-text value="СВЕТОФОР Ч1" color="#f1c40f" align="center" position="0 0.03 -0.05" scale="0.35 0.35 0.35" rotation="-90 0 0" font="monoid"></a-text>
-            
-            <a-cylinder class="clickable tl-btn-red" position="-0.08 0.03 0.03" radius="0.03" height="0.03" color="#e74c3c"></a-cylinder>
-            <a-cylinder class="clickable tl-btn-green" position="0.08 0.03 0.03" radius="0.03" height="0.03" color="#2ecc71"></a-cylinder>
         </a-entity>
 
         <a-entity id="table-schedule" class="clickable" position="0.8 0.86 -1.0" rotation="-90 -15 0">
@@ -217,8 +210,8 @@
             <a-cylinder position="0 0.05 0.03" rotation="90 0 0" radius="0.02" height="0.01" color="#e74c3c"></a-cylinder>
         </a-box>
 
-        <a-entity id="camera-rig" position="0 0.4 0.5" rotation="0 0 0">
-            <a-camera id="main-camera" look-controls="magicWindowTrackingEnabled: false; touchEnabled: true; pointerLockEnabled: false">
+        <a-entity id="camera-rig" position="0 0.8 0.5" rotation="0 0 0">
+            <a-camera id="main-camera" position="0 0.4 0" look-controls="magicWindowTrackingEnabled: false; touchEnabled: true; pointerLockEnabled: false">
                 
                 <a-entity id="hand-schedule" class="clickable" position="0 -0.2 -0.4" rotation="10 0 0" visible="false">
                     <a-plane width="0.3" height="0.45" color="#fdfbf7"></a-plane>
@@ -260,7 +253,6 @@
         const handSig = document.getElementById('hand-sig');
         let isSigned = false;
 
-        // ПЕРЕМЕННЫЕ ДЛЯ СИСТЕМЫ ПЕРЕГОВОРОВ ПО РАЦИИ
         let isCallIncoming = false;
         let currentMessageIndex = 0;
         const dispatcherMessages = [
@@ -270,13 +262,13 @@
             "ДНЦ: Дежурный, как приняли смену? Документы подписали? Закрепление на 4-м пути проверьте и доложите."
         ];
 
-        // ЛОГИКА СВЕТОФОРА
+        // ЛОГИКА СВЕТОФОРА (Исправлена область видимости click)
         const tlRedLight = document.getElementById('tl-red-light');
         const tlGreenLight = document.getElementById('tl-green-light');
 
         document.querySelectorAll('.tl-btn-red').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const el = this.object3D;
+            btn.addEventListener('click', () => {
+                const el = btn.object3D;
                 el.position.y -= 0.015;
                 setTimeout(() => { el.position.y += 0.015; }, 150);
 
@@ -288,8 +280,8 @@
         });
 
         document.querySelectorAll('.tl-btn-green').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const el = this.object3D;
+            btn.addEventListener('click', () => {
+                const el = btn.object3D;
                 el.position.y -= 0.015;
                 setTimeout(() => { el.position.y += 0.015; }, 150);
 
@@ -352,7 +344,6 @@
         window.addEventListener('mousemove', handleJoystickMove);
         window.addEventListener('mouseup', handleJoystickEnd);
 
-        // Игровой цикл перемещения
         function updateMovement() {
             if (joystickActive && (moveX !== 0 || moveZ !== 0)) {
                 const rotation = mainCamera.getAttribute('rotation');
@@ -381,19 +372,16 @@
         }
         requestAnimationFrame(updateMovement);
 
-        // Загрузка аудиоинформатора
         document.getElementById('audio1').addEventListener('change', (e) => { if(e.target.files[0]) audioFiles[1] = new Audio(URL.createObjectURL(e.target.files[0])); });
         document.getElementById('audio2').addEventListener('change', (e) => { if(e.target.files[0]) audioFiles[2] = new Audio(URL.createObjectURL(e.target.files[0])); });
         document.getElementById('audio3').addEventListener('change', (e) => { if(e.target.files[0]) audioFiles[3] = new Audio(URL.createObjectURL(e.target.files[0])); });
 
-        // ФУНКЦИЯ ИНИЦИАЦИИ ВХОДЯЩЕГО ВЫЗОВА ОТ ДНЦ
         function triggerIncomingCall() {
             if (isCallIncoming) return;
             isCallIncoming = true;
             document.getElementById('radio-alert').style.display = 'block';
         }
 
-        // ЛОГИКА ПОДПИСИ ЛИСТКА
         signBtn.addEventListener('click', () => {
             isSigned = true;
             tableSig.setAttribute('value', 'Принято (Подпись: ДСП) ✓');
@@ -424,7 +412,6 @@
             tableSchedule.classList.add('clickable');
         });
 
-        // Умное переключение рации
         tableRadio.addEventListener('click', () => {
             tableRadio.setAttribute('visible', false);
             tableRadio.classList.remove('clickable');
@@ -443,7 +430,6 @@
             tableRadio.classList.add('clickable');
         });
 
-        // НАЖАТИЕ НА КНОПКУ РАЦИИ В РУКЕ
         handRadioBtn.addEventListener('click', (e) => {
             e.stopPropagation(); 
             if(raciaAudio) {
