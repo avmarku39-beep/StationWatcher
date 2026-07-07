@@ -115,14 +115,11 @@
         </div>
     </div>
 
-    <!-- КНОПКА ПОДПИСАТЬ -->
     <button id="sign-screen-btn">ПОДПИСАТЬ РАСПИСАНИЕ</button>
 
-    <!-- ИНТЕРФЕЙС СВЯЗИ ПО РАЦИИ -->
     <div id="radio-alert">📳 ВЫЗОВ ПО РАЦИИ (ДНЦ)</div>
     <div id="radio-speech"></div>
 
-    <!-- ВИРТУАЛЬНЫЙ ДЖОЙСТИК -->
     <div id="joystick-zone">
         <div id="joystick-handle"></div>
     </div>
@@ -134,7 +131,6 @@
             <video id="video-train" src="arrival.mp4" playsinline muted crossorigin="anonymous"></video>
             <img id="wood-texture" src="https://cdn.jsdelivr.net/gh/aframevr/sample-assets@master/assets/images/wood/hardwood2_diffuse.jpg" crossorigin="anonymous">
             
-            <!-- ВОТ СЮДА ВСТАВЛЯЕМ ОТНОСИТЕЛЬНЫЕ ПУТИ ВМЕСТО СТАРЫХ ССЫЛОК -->
             <img id="wall-texture" src="wall.jpg" crossorigin="anonymous">
             <img id="floor-texture" src="floor.jpg" crossorigin="anonymous">
             <img id="door-texture" src="door.jpg" crossorigin="anonymous">
@@ -143,50 +139,47 @@
         <a-light id="ambient-light" type="ambient" intensity="0.5"></a-light>
         <a-light id="main-light" type="point" intensity="0.8" position="0 2.5 0"></a-light>
 
-        <!-- СТРУКТУРА КОМНАТЫ -->
         <a-entity id="room">
-            <!-- ПЕРЕДНЯЯ СТЕНА -->
             <a-plane position="-3.5 2 -4" width="1" height="5" src="#wall-texture" repeat="0.5 2.5"></a-plane>
             <a-plane position="3.5 2 -4" width="1" height="5" src="#wall-texture" repeat="0.5 2.5"></a-plane>
             <a-plane position="0 3.925 -4" width="6" height="1.475" src="#wall-texture" repeat="3 0.7"></a-plane>
             <a-plane position="0 -0.075 -4" width="6" height="0.825" src="#wall-texture" repeat="3 0.4"></a-plane>
 
-            <!-- Задняя стена -->
             <a-plane position="0 2 4" rotation="0 180 0" width="8" height="5" src="#wall-texture" repeat="4 2.5"></a-plane> 
             
-            <!-- Левая стена с дверью -->
             <a-plane position="-4 2 0" rotation="0 90 0" width="8" height="5" src="#wall-texture" repeat="4 2.5"></a-plane> 
             <a-box position="-3.95 0.6 1.5" rotation="0 90 0" width="1.0" height="2.2" depth="0.05" src="#door-texture">
                 <a-sphere position="0.4 0 -0.04" radius="0.03" color="#d4af37"></a-sphere>
             </a-box>
 
-            <!-- КНОПКА СЕМАФОРА ВОЗЛЕ ДВЕРИ -->
             <a-entity position="-3.94 1.2 0.7" rotation="0 90 0">
                 <a-box width="0.2" height="0.25" depth="0.05" color="#555555"></a-box>
                 <a-cylinder semafor-btn class="clickable" position="0 0 0.03" rotation="90 0 0" radius="0.06" height="0.04" color="#ff0000"></a-cylinder>
             </a-entity>
 
-            <!-- Правая стена -->
             <a-plane position="4 2 0" rotation="0 -90 0" width="8" height="5" src="#wall-texture" repeat="4 2.5"></a-plane> 
             
-            <!-- Пол -->
             <a-plane position="0 -0.5 0" rotation="-90 0 0" width="8" height="8" src="#floor-texture" repeat="4 4"></a-plane> 
-            
-            <!-- Потолок -->
             <a-plane position="0 4.5 0" rotation="90 0 0" width="8" height="8" color="#edf2f4"></a-plane>
         </a-entity>
 
-        <!-- Окно -->
         <a-video id="main-video-screen" src="#video-station" width="6" height="3.375" position="0 1.5 -3.95"></a-video>
         <a-plane position="0 1.5 -3.93" width="6" height="3.375" color="#a0c4ff" opacity="0.15" material="transparent: true; metalness: 0.8; roughness: 0.1"></a-plane>
         
-        <!-- Рамки окна -->
         <a-box position="0 3.2 -3.9" width="6.2" height="0.1" depth="0.1" color="#2b2d42"></a-box>
         <a-box position="0 -0.2 -3.9" width="6.2" height="0.1" depth="0.1" color="#2b2d42"></a-box>
         <a-box position="-3.05 1.5 -3.9" width="0.1" height="3.4" depth="0.1" color="#2b2d42"></a-box>
         <a-box position="3.05 1.5 -3.9" width="0.1" height="3.4" depth="0.1" color="#2b2d42"></a-box>
 
-        <!-- СТОЛ С НОЖКАМИ -->
+        <a-entity id="traffic-light-system" position="2.2 1.3 -3.85">
+            <a-cylinder radius="0.02" height="1.8" color="#333" position="0 -0.4 0"></a-cylinder>
+            <a-box width="0.25" height="0.5" depth="0.05" color="#111" position="0 0.3 0"></a-box>
+            <a-cylinder position="0 0.42 0.03" rotation="90 0 0" radius="0.07" height="0.06" color="#000" theta-length="180"></a-cylinder>
+            <a-cylinder position="0 0.18 0.03" rotation="90 0 0" radius="0.07" height="0.06" color="#000" theta-length="180"></a-cylinder>
+            <a-cylinder id="tl-red-light" position="0 0.42 0.03" rotation="90 0 0" radius="0.06" height="0.02" color="#ff0000" material="emissive: #ff0000; emissiveIntensity: 1"></a-cylinder>
+            <a-cylinder id="tl-green-light" position="0 0.18 0.03" rotation="90 0 0" radius="0.06" height="0.02" color="#003300" material="emissive: #00ff00; emissiveIntensity: 0"></a-cylinder>
+        </a-entity>
+
         <a-entity id="desk">
             <a-box position="0 0.8 -1.2" width="3" height="0.1" depth="1.2" src="#wood-texture" repeat="2 1"></a-box>
             <a-cylinder position="-1.4 0.15 -1.7" radius="0.04" height="1.2" src="#wood-texture"></a-cylinder>
@@ -195,16 +188,22 @@
             <a-cylinder position="1.4 0.15 -0.7" radius="0.04" height="1.2" src="#wood-texture"></a-cylinder>
         </a-entity>
 
-        <!-- Пульт информатора на столе -->
-        <a-entity position="-0.2 1.0 -1.4" rotation="15 0 0">
-            <a-box width="1.2" height="0.1" depth="0.5" color="#4a5568"></a-box>
-            <a-cylinder class="clickable" info-btn="1" position="-0.4 0.05 -0.1" radius="0.08" height="0.05" color="#2ecc71"></a-cylinder>
-            <a-cylinder class="clickable" info-btn="2" position="0 0.05 -0.1" radius="0.08" height="0.05" color="#2ecc71"></a-cylinder>
-            <a-cylinder class="clickable" info-btn="3" position="0.4 0.05 -0.1" radius="0.08" height="0.05" color="#2ecc71"></a-cylinder>
+        <a-entity position="-0.4 1.0 -1.4" rotation="15 0 0">
+            <a-box width="0.8" height="0.1" depth="0.4" color="#4a5568"></a-box>
+            <a-cylinder class="clickable" info-btn="1" position="-0.25 0.05 -0.05" radius="0.06" height="0.05" color="#2ecc71"></a-cylinder>
+            <a-cylinder class="clickable" info-btn="2" position="0 0.05 -0.05" radius="0.06" height="0.05" color="#2ecc71"></a-cylinder>
+            <a-cylinder class="clickable" info-btn="3" position="0.25 0.05 -0.05" radius="0.06" height="0.05" color="#2ecc71"></a-cylinder>
         </a-entity>
 
-        <!-- Листок расписания (стол) -->
-        <a-entity id="table-schedule" class="clickable" position="0.6 0.86 -1.0" rotation="-90 -15 0">
+        <a-entity position="0.2 0.88 -1.3" rotation="-20 0 0">
+            <a-box width="0.35" height="0.05" depth="0.2" color="#2c3e50"></a-box>
+            <a-text value="СВЕТОФОР Ч1" color="#f1c40f" align="center" position="0 0.03 -0.05" scale="0.35 0.35 0.35" rotation="-90 0 0" font="monoid"></a-text>
+            
+            <a-cylinder class="clickable tl-btn-red" position="-0.08 0.03 0.03" radius="0.03" height="0.03" color="#e74c3c"></a-cylinder>
+            <a-cylinder class="clickable tl-btn-green" position="0.08 0.03 0.03" radius="0.03" height="0.03" color="#2ecc71"></a-cylinder>
+        </a-entity>
+
+        <a-entity id="table-schedule" class="clickable" position="0.8 0.86 -1.0" rotation="-90 -15 0">
             <a-plane width="0.3" height="0.45" color="#fdfbf7"></a-plane>
             <a-text value="SCHEDULE: 
                         10:41 Kaliningrad-Mamonovo,
@@ -213,17 +212,14 @@
             <a-text id="table-sig" value="НЕ ПОДПИСАНО" color="#ff0000" align="center" position="0 -0.15 0.01" scale="0.4 0.4 0.4" width="0.6"></a-text>
         </a-entity>
 
-        <!-- Рация (стол) -->
         <a-box id="table-radio" class="clickable" position="-1.0 0.95 -1.1" rotation="0 30 0" width="0.12" height="0.25" depth="0.06" color="#1a1a1a">
             <a-cylinder position="-0.03 0.18 0" radius="0.01" height="0.15" color="#000"></a-cylinder>
             <a-cylinder position="0 0.05 0.03" rotation="90 0 0" radius="0.02" height="0.01" color="#e74c3c"></a-cylinder>
         </a-box>
 
-        <!-- КАМЕРА -->
         <a-entity id="camera-rig" position="0 0.4 0.5" rotation="0 0 0">
             <a-camera id="main-camera" look-controls="magicWindowTrackingEnabled: false; touchEnabled: true; pointerLockEnabled: false">
                 
-                <!-- Листок расписания (рука) -->
                 <a-entity id="hand-schedule" class="clickable" position="0 -0.2 -0.4" rotation="10 0 0" visible="false">
                     <a-plane width="0.3" height="0.45" color="#fdfbf7"></a-plane>
                     <a-text value="SCHEDULE: 
@@ -233,7 +229,6 @@
                     <a-text id="hand-sig" value="НЕ ПОДПИСАНО" color="#ff0000" align="center" position="0 -0.15 0.01" scale="0.4 0.4 0.4" width="0.6"></a-text>
                 </a-entity>
 
-                <!-- Рация (рука) -->
                 <a-entity id="hand-radio" position="0.3 -0.35 -0.5" rotation="0 -20 0" visible="false">
                     <a-box id="hand-radio-body" class="clickable" width="0.12" height="0.25" depth="0.06" color="#1a1a1a"></a-box>
                     <a-cylinder id="hand-radio-btn" class="clickable" position="0 0.05 0.035" rotation="90 0 0" radius="0.02" height="0.015" color="#e74c3c"></a-cylinder>
@@ -274,6 +269,36 @@
             "ДНЦ: Внимание, Мамоново! На перегоне ведутся незапланированные путевые работы. Будьте бдительны.",
             "ДНЦ: Дежурный, как приняли смену? Документы подписали? Закрепление на 4-м пути проверьте и доложите."
         ];
+
+        // ЛОГИКА СВЕТОФОРА
+        const tlRedLight = document.getElementById('tl-red-light');
+        const tlGreenLight = document.getElementById('tl-green-light');
+
+        document.querySelectorAll('.tl-btn-red').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const el = this.object3D;
+                el.position.y -= 0.015;
+                setTimeout(() => { el.position.y += 0.015; }, 150);
+
+                tlRedLight.setAttribute('color', '#ff0000');
+                tlRedLight.setAttribute('material', 'emissive: #ff0000; emissiveIntensity: 1');
+                tlGreenLight.setAttribute('color', '#003300');
+                tlGreenLight.setAttribute('material', 'emissive: #00ff00; emissiveIntensity: 0');
+            });
+        });
+
+        document.querySelectorAll('.tl-btn-green').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const el = this.object3D;
+                el.position.y -= 0.015;
+                setTimeout(() => { el.position.y += 0.015; }, 150);
+
+                tlRedLight.setAttribute('color', '#330000');
+                tlRedLight.setAttribute('material', 'emissive: #ff0000; emissiveIntensity: 0');
+                tlGreenLight.setAttribute('color', '#2ecc71');
+                tlGreenLight.setAttribute('material', 'emissive: #2ecc71; emissiveIntensity: 1');
+            });
+        });
 
         // ЛОГИКА ВИРТУАЛЬНОГО ДЖОЙСТИКА
         const joystickZone = document.getElementById('joystick-zone');
@@ -418,7 +443,7 @@
             tableRadio.classList.add('clickable');
         });
 
-        // НАЖАТИЕ НА КНОПКУ РАЦИИ В РУКЕ (ОТВЕТ НА ВЫЗОВ ИЛИ ПРОСЛУШИВАНИЕ ЭФИРА)
+        // НАЖАТИЕ НА КНОПКУ РАЦИИ В РУКЕ
         handRadioBtn.addEventListener('click', (e) => {
             e.stopPropagation(); 
             if(raciaAudio) {
@@ -453,7 +478,6 @@
         document.getElementById('start-btn').addEventListener('click', () => {
             setupScreen.style.display = 'none';
             
-            // Жесткий пинок для видео (требование Chrome по автоплею)
             if (videoStation) {
                 videoStation.muted = true;
                 videoStation.play().then(() => {
@@ -473,7 +497,7 @@
             if (screenVideo && videoTrain) {
                 screenVideo.setAttribute('src', '#video-train');
                 videoTrain.currentTime = 0;
-                videoTrain.muted = true; // Для надежности автоплея в Chrome
+                videoTrain.muted = true; 
                 videoTrain.play().catch(e => {});
             }
         }
